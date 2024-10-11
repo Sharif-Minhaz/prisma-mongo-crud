@@ -70,7 +70,40 @@ export const addTodo = async (prevState: any, data: FormData) => {
 	});
 
 	revalidatePath("/");
-	return { message: "Todo added successfully" };
+	return { success: true };
+};
+
+export const updateTodo = async (id: string, title: string) => {
+	const validatedFields = schema.safeParse({ title });
+	if (!validatedFields.success) {
+		return {
+			errors: validatedFields.error.flatten().fieldErrors,
+			message: "Error occurred",
+		};
+	}
+	await prisma.todo.update({
+		where: { id },
+		data: { title },
+	});
+	revalidatePath("/");
+};
+
+export const completeTodo = async (id: string) => {
+	const todo = await prisma.todo.findUnique({
+		where: { id },
+		select: { isComplete: true },
+	});
+
+	if (!todo) {
+		throw new Error("Todo not found");
+	}
+
+	await prisma.todo.update({
+		where: { id },
+		data: { isComplete: !todo.isComplete },
+	});
+
+	revalidatePath("/");
 };
 
 export const deleteTodo = async (id: string) => {
@@ -84,5 +117,4 @@ export const deleteTodo = async (id: string) => {
 		where: { id, authorId: user.id },
 	});
 	revalidatePath("/");
-	return { message: "Todo deleted successfully" };
 };

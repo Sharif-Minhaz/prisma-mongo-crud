@@ -1,6 +1,6 @@
 "use client";
 
-import { deleteTodo } from "@/lib/actions/todos.actions";
+import { updateTodo, deleteTodo, completeTodo } from "@/lib/actions/todos.actions";
 import { ITodo } from "@/types";
 import Link from "next/link";
 import { useState } from "react";
@@ -17,9 +17,9 @@ export default function SingleTodo({
 	const [isUpdate, setIsUpdate] = useState(false);
 	const [updatedText, setUpdatedText] = useState(todo.title);
 
-	const handleUpdate = () => {
+	const handleUpdate = async () => {
 		if (isUpdate) {
-			// server req
+			await updateTodo(todo.id, updatedText);
 			setIsUpdate(false);
 		} else {
 			setIsUpdate(true);
@@ -30,14 +30,23 @@ export default function SingleTodo({
 		await deleteTodo(id);
 	};
 
+	const handleComplete = async (id: string) => {
+		await completeTodo(id);
+	};
+
 	return (
 		<li className="border p-3 flex justify-between">
 			{isUpdate ? (
-				<input
-					className="px-2 py-1 border w-full mr-3.5"
-					value={updatedText}
-					onChange={(e) => setUpdatedText(e.target.value)}
-				/>
+				<>
+					<input
+						className="px-2 py-1 border w-full mr-3.5"
+						value={updatedText}
+						onChange={(e) => setUpdatedText(e.target.value)}
+					/>
+					<button className="mr-3" onClick={() => setIsUpdate(false)}>
+						Close
+					</button>
+				</>
 			) : (
 				<Link href={`/${todo.id}`}>
 					<span className={`${todo.isComplete ? "line-through" : ""}`}>
@@ -54,6 +63,7 @@ export default function SingleTodo({
 							defaultChecked={todo.isComplete}
 							name=""
 							id=""
+							onChange={() => handleComplete(todo.id)}
 						/>
 					)}
 					<button onClick={() => handleDelete(todo.id)} className="text-red-600">

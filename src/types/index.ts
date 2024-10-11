@@ -3,6 +3,7 @@ export interface ITodo {
 	title: string;
 	isComplete: boolean;
 	createdAt: Date;
+	updatedAt: Date;
 	author: IUser;
 }
 
